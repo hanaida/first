@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>리듬 게임</title>
+    <title>숫자 입력 리듬게임</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            position: relative;
+            background-color: #222;
+            color: white;
         }
         #game-container {
             margin-top: 20px;
@@ -18,51 +19,58 @@
             font-weight: bold;
             margin: 10px 0;
         }
-        .game-button {
-            font-size: 20px;
-            padding: 20px;
-            margin: 10px;
-            width: 80px;
-            height: 80px;
+        #buttons {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: auto;
+        }
+        .button {
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             border: none;
-            color: white;
+            font-size: 20px;
             font-weight: bold;
+            color: white;
+            position: absolute;
+            transition: background 0.2s;
         }
-        .button-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
-            gap: 20px;
-            justify-content: center;
-            align-items: center;
-            width: 200px;
-            margin: 20px auto;
+        .button:active {
+            filter: brightness(1.5);
         }
-        .button-0 { background-color: purple; }
-        .button-1 { background-color: red; }
-        .button-2 { background-color: orange; }
-        .button-3 { background-color: yellow; }
+        #btn-1 { background: red; left: 20px; top: 50px; }
+        #btn-2 { background: orange; left: 60px; top: 100px; }
+        #btn-3 { background: yellow; left: 100px; top: 50px; }
+        #btn-0 { background: purple; right: 0; top: 75px; }
+        
         #timer-bar {
             width: 100%;
-            height: 20px;
-            background-color: red;
-            transition: width 5s linear;
-            position: absolute;
-            bottom: 0;
+            height: 10px;
+            background: red;
+            position: fixed;
+            bottom: 10px;
             left: 0;
+            transition: width linear;
+        }
+        .faded {
+            opacity: 0.5;
         }
     </style>
 </head>
 <body>
-
-    <h1>리듬 게임</h1>
+    <h1>숫자 입력 리듬게임</h1>
     <button onclick="startGame('돼지')">/돼지</button>
     <button onclick="startGame('토끼')">/토끼</button>
     
     <div id="game-container">
         <p id="output">게임을 시작하세요.</p>
-        <div class="button-container" id="button-container"></div>
+        <div id="buttons">
+            <button id="btn-1" class="button" onclick="handleInput(1)">1</button>
+            <button id="btn-2" class="button" onclick="handleInput(2)">2</button>
+            <button id="btn-3" class="button" onclick="handleInput(3)">3</button>
+            <button id="btn-0" class="button" onclick="handleInput(0)">0</button>
+        </div>
     </div>
     <div id="timer-bar"></div>
     
@@ -71,12 +79,9 @@
         let gameActive = false;
         let round = 0;
         let currentAnswer = "";
-        let inputSequence = "";
-        let colorsPig = ["1", "2", "3"];
-        let colorsRabbit = ["8", "9", "0"];
-        let buttonMap = {};
+        let userInput = "";
         let timer;
-
+        
         function startGame(type) {
             if (gameActive) {
                 alert("이미 게임이 진행 중입니다.");
@@ -85,94 +90,69 @@
             gameType = type;
             gameActive = true;
             round = 0;
-            inputSequence = "";
-            generateQuestion();
+            nextRound();
         }
-
-        function getPatternLength() {
-            return 6 + Math.floor(round / 5) * 2;
+        
+        function nextRound() {
+            round++;
+            let length = 6 + Math.floor((round - 1) / 5) * 2;
+            generateQuestion(length);
+            resetTimer();
         }
-
-        function generateQuestion() {
-            clearTimeout(timer);
-            let timerBar = document.getElementById("timer-bar");
-            timerBar.style.transition = "none";
-            timerBar.style.width = "100%";
-            
-            setTimeout(() => {
-                timerBar.style.transition = "width 5s linear";
-                timerBar.style.width = "0%";
-            }, 10);
-            
-            let colorSet = gameType === "돼지" ? colorsPig : colorsRabbit;
-            let length = getPatternLength();
-            
-            if (gameType === "돼지") {
-                currentAnswer = Array.from({ length: length }, (_, i) => (i % 2 === 0 ? colorsPig[Math.floor(Math.random() * colorsPig.length)] : "0")).join("");
-            } else {
-                currentAnswer = Array.from({ length: length }, () => colorSet[Math.floor(Math.random() * colorSet.length)]).join("");
+        
+        function generateQuestion(length) {
+            let sequence = "";
+            for (let i = 0; i < length; i++) {
+                sequence += Math.floor(Math.random() * 4).toString();
             }
-            
-            let formattedAnswer = currentAnswer.split('').map(num => `<span class="pattern" data-value="${num}">${num}</span>`).join('');
-            document.getElementById("output").innerHTML = `패턴: ${formattedAnswer}`;
-            inputSequence = "";
-            renderButtons();
-            startTimer();
+            currentAnswer = sequence;
+            userInput = "";
+            updateOutput(sequence);
         }
-
-        function renderButtons() {
-            let container = document.getElementById("button-container");
-            container.innerHTML = "";
-            buttonMap = {};
-            let buttons = [
-                { num: "0", class: "button-0" },
-                { num: "1", class: "button-1" },
-                { num: "2", class: "button-2" },
-                { num: "3", class: "button-3" }
-            ];
-            
-            buttons.forEach(({ num, class: className }) => {
-                let btn = document.createElement("button");
-                btn.innerText = num;
-                btn.classList.add("game-button", className);
-                btn.onclick = () => handleInput(num);
-                container.appendChild(btn);
-                buttonMap[num] = btn;
-            });
+        
+        function updateOutput(sequence) {
+            let formatted = "";
+            for (let i = 0; i < sequence.length; i++) {
+                formatted += `<span id='num-${i}'>${sequence[i]}</span> `;
+            }
+            document.getElementById("output").innerHTML = formatted;
         }
-
-        function handleInput(input) {
+        
+        function handleInput(num) {
             if (!gameActive) return;
-            inputSequence += input;
-            let patternElements = document.querySelectorAll(".pattern");
-            if (inputSequence === currentAnswer) {
-                round++;
-                document.getElementById("output").innerText = `통과! Round: ${round}`;
-                setTimeout(generateQuestion, 1000);
-            } else if (!currentAnswer.startsWith(inputSequence)) {
-                gameOver();
+            
+            userInput += num.toString();
+            let index = userInput.length - 1;
+            let correct = currentAnswer[index];
+            
+            if (num.toString() === correct) {
+                document.getElementById(`num-${index}`).classList.add("faded");
+                if (userInput.length === currentAnswer.length) {
+                    nextRound();
+                }
             } else {
-                patternElements[inputSequence.length - 1].classList.add("correct");
+                gameOver();
             }
         }
         
-        function startTimer() {
+        function resetTimer() {
             clearTimeout(timer);
+            document.getElementById("timer-bar").style.width = "100%";
             timer = setTimeout(gameOver, 5000);
+            let startTime = Date.now();
+            let interval = setInterval(() => {
+                let elapsed = (Date.now() - startTime) / 5000;
+                document.getElementById("timer-bar").style.width = (100 - elapsed * 100) + "%";
+                if (elapsed >= 1) clearInterval(interval);
+            }, 50);
         }
-
+        
         function gameOver() {
-            alert("실패! 게임 오버");
+            alert("게임 종료!");
             gameActive = false;
             document.getElementById("output").innerText = "게임 종료. 다시 시작하세요.";
+            clearTimeout(timer);
         }
-
-        document.addEventListener("keydown", (event) => {
-            let key = event.key;
-            if (buttonMap[key]) {
-                handleInput(key);
-            }
-        });
     </script>
 </body>
 </html>
