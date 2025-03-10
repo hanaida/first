@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>떡치기</title>
+    <title>리듬 게임</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -26,7 +26,7 @@
 </head>
 <body>
 
-    <h1>떡치기</h1>
+    <h1>리듬 게임</h1>
     <button onclick="startGame('돼지')">/돼지</button>
     <button onclick="startGame('토끼')">/토끼</button>
     
@@ -58,7 +58,11 @@
 
         function generateQuestion() {
             let colorSet = gameType === "돼지" ? colorsPig : colorsRabbit;
-            currentAnswer = Array.from({ length: 4 }, () => colorSet[Math.floor(Math.random() * colorSet.length)]).join("");
+            if (gameType === "돼지") {
+                currentAnswer = Array.from({ length: 4 }, (_, i) => (i % 2 === 0 ? colorsPig[Math.floor(Math.random() * colorsPig.length)] : "0")).join("");
+            } else {
+                currentAnswer = Array.from({ length: 4 }, () => colorSet[Math.floor(Math.random() * colorSet.length)]).join("");
+            }
             document.getElementById("output").innerText = `패턴: ${currentAnswer}`;
             inputSequence = "";
             renderButtons(colorSet);
@@ -67,7 +71,7 @@
         function renderButtons(colorSet) {
             let container = document.getElementById("button-container");
             container.innerHTML = "";
-            colorSet.forEach(num => {
+            colorSet.concat(["0"]).forEach(num => {
                 let btn = document.createElement("button");
                 btn.innerText = num;
                 btn.classList.add("game-button");
