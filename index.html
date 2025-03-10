@@ -36,13 +36,12 @@
         }
         .game-buttons {
             display: flex;
-            flex-wrap: nowrap;
+            flex-wrap: wrap;
             justify-content: center;
             gap: 10px;
             margin-bottom: 20px;
         }
         .game-button {
-            flex: 1;
             min-width: 60px;
             height: 60px;
             font-size: 24px;
@@ -56,6 +55,18 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #row-top {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        #row-bottom {
+            display: flex;
+            gap: 10px;
         }
     </style>
 </head>
@@ -68,7 +79,10 @@
     
     <div id="game-container">
         <p id="output">게임을 시작하세요.</p>
-        <div id="button-container" class="game-buttons"></div>
+        <div id="button-container">
+            <div id="row-top"></div>
+            <div id="row-bottom"></div>
+        </div>
     </div>
 
     <script>
@@ -112,15 +126,25 @@
         }
 
         function renderButtons() {
-            let container = document.getElementById("button-container");
-            container.innerHTML = "";
+            let rowTop = document.getElementById("row-top");
+            let rowBottom = document.getElementById("row-bottom");
+            rowTop.innerHTML = "";
+            rowBottom.innerHTML = "";
             buttonMap = {};
-            colorsPig.concat(["0"]).forEach(num => {
+            
+            let btn3 = document.createElement("button");
+            btn3.innerText = "3";
+            btn3.classList.add("game-button");
+            btn3.onclick = () => handleInput("3");
+            rowTop.appendChild(btn3);
+            buttonMap["3"] = btn3;
+            
+            ["1", "2", "0"].forEach(num => {
                 let btn = document.createElement("button");
                 btn.innerText = num;
                 btn.classList.add("game-button");
                 btn.onclick = () => handleInput(num);
-                container.appendChild(btn);
+                rowBottom.appendChild(btn);
                 buttonMap[num] = btn;
             });
         }
