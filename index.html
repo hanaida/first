@@ -25,6 +25,12 @@
         .correct {
             color: lightgray;
         }
+        #timer-bar {
+            width: 100%;
+            height: 20px;
+            background-color: red;
+            transition: width 5s linear;
+        }
     </style>
 </head>
 <body>
@@ -35,6 +41,7 @@
     
     <div id="game-container">
         <p id="output">게임을 시작하세요.</p>
+        <div id="timer-bar"></div>
         <div id="button-container"></div>
     </div>
 
@@ -47,6 +54,7 @@
         let colorsPig = ["1", "2", "3"];
         let colorsRabbit = ["8", "9", "0"];
         let buttonMap = {};
+        let timer;
 
         function startGame(type) {
             if (gameActive) {
@@ -60,9 +68,14 @@
             generateQuestion();
         }
 
+        function getPatternLength() {
+            return 6 + Math.floor(round / 5) * 2;
+        }
+
         function generateQuestion() {
+            clearTimeout(timer);
             let colorSet = gameType === "돼지" ? colorsPig : colorsRabbit;
-            let length = 6 + round; // 라운드가 올라갈수록 패턴이 길어짐
+            let length = getPatternLength();
             
             if (gameType === "돼지") {
                 currentAnswer = Array.from({ length: length }, (_, i) => (i % 2 === 0 ? colorsPig[Math.floor(Math.random() * colorsPig.length)] : "0")).join("");
@@ -74,6 +87,7 @@
             document.getElementById("output").innerHTML = `패턴: ${formattedAnswer}`;
             inputSequence = "";
             renderButtons(colorSet);
+            startTimer();
         }
 
         function renderButtons(colorSet) {
@@ -99,14 +113,26 @@
                 document.getElementById("output").innerText = `통과! Round: ${round}`;
                 setTimeout(generateQuestion, 1000);
             } else if (!currentAnswer.startsWith(inputSequence)) {
-                alert("실패!");
-                gameActive = false;
-                document.getElementById("output").innerText = "게임 종료. 다시 시작하세요.";
+                gameOver();
             } else {
                 patternElements[inputSequence.length - 1].classList.add("correct");
             }
         }
         
+        function startTimer() {
+            let timerBar = document.getElementById("timer-bar");
+            timerBar.style.width = "100%";
+            timerBar.style.transition = "width 5s linear";
+            setTimeout(() => { timerBar.style.width = "0%"; }, 10);
+            timer = setTimeout(gameOver, 5000);
+        }
+
+        function gameOver() {
+            alert("실패! 게임 오버");
+            gameActive = false;
+            document.getElementById("output").innerText = "게임 종료. 다시 시작하세요.";
+        }
+
         document.addEventListener("keydown", (event) => {
             let key = event.key;
             if (buttonMap[key]) {
