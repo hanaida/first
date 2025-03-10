@@ -22,8 +22,8 @@
             padding: 10px;
             margin: 5px;
         }
-        .pressed {
-            background-color: lightgray;
+        .correct {
+            color: lightgray;
         }
     </style>
 </head>
@@ -62,12 +62,16 @@
 
         function generateQuestion() {
             let colorSet = gameType === "돼지" ? colorsPig : colorsRabbit;
+            let length = 6 + round; // 라운드가 올라갈수록 패턴이 길어짐
+            
             if (gameType === "돼지") {
-                currentAnswer = Array.from({ length: 4 }, (_, i) => (i % 2 === 0 ? colorsPig[Math.floor(Math.random() * colorsPig.length)] : "0")).join("");
+                currentAnswer = Array.from({ length: length }, (_, i) => (i % 2 === 0 ? colorsPig[Math.floor(Math.random() * colorsPig.length)] : "0")).join("");
             } else {
-                currentAnswer = Array.from({ length: 4 }, () => colorSet[Math.floor(Math.random() * colorSet.length)]).join("");
+                currentAnswer = Array.from({ length: length }, () => colorSet[Math.floor(Math.random() * colorSet.length)]).join("");
             }
-            document.getElementById("output").innerText = `패턴: ${currentAnswer}`;
+            
+            let formattedAnswer = currentAnswer.split('').map(num => `<span class="pattern" data-value="${num}">${num}</span>`).join('');
+            document.getElementById("output").innerHTML = `패턴: ${formattedAnswer}`;
             inputSequence = "";
             renderButtons(colorSet);
         }
@@ -80,17 +84,16 @@
                 let btn = document.createElement("button");
                 btn.innerText = num;
                 btn.classList.add("game-button");
-                btn.onclick = () => handleInput(num, btn);
+                btn.onclick = () => handleInput(num);
                 container.appendChild(btn);
                 buttonMap[num] = btn;
             });
         }
 
-        function handleInput(input, btn) {
+        function handleInput(input) {
             if (!gameActive) return;
             inputSequence += input;
-            if (btn) btn.classList.add("pressed");
-            
+            let patternElements = document.querySelectorAll(".pattern");
             if (inputSequence === currentAnswer) {
                 round++;
                 document.getElementById("output").innerText = `통과! Round: ${round}`;
@@ -99,13 +102,15 @@
                 alert("실패!");
                 gameActive = false;
                 document.getElementById("output").innerText = "게임 종료. 다시 시작하세요.";
+            } else {
+                patternElements[inputSequence.length - 1].classList.add("correct");
             }
         }
         
         document.addEventListener("keydown", (event) => {
             let key = event.key;
             if (buttonMap[key]) {
-                handleInput(key, buttonMap[key]);
+                handleInput(key);
             }
         });
     </script>
