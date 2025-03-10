@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>숫자 입력 게임</title>
+    <title>리듬 게임</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -17,28 +17,32 @@
             font-weight: bold;
             margin: 10px 0;
         }
+        .game-button {
+            font-size: 20px;
+            padding: 10px;
+            margin: 5px;
+        }
     </style>
 </head>
 <body>
 
-    <h1>숫자 입력 게임</h1>
+    <h1>리듬 게임</h1>
     <button onclick="startGame('돼지')">/돼지</button>
     <button onclick="startGame('토끼')">/토끼</button>
     
     <div id="game-container">
         <p id="output">게임을 시작하세요.</p>
-        <input type="text" id="userInput" placeholder="정답 입력">
-        <button onclick="checkAnswer()">제출</button>
+        <div id="button-container"></div>
     </div>
 
     <script>
         let gameType = null;
         let gameActive = false;
-        let startTime;
         let round = 0;
-        let currentAnswer;
-        let colorsPig = ["1 0 ", "2 0 ", "3 0 ", "1 0 2 0 ", "2 0 1 0 ", "2 0 3 0 ", "3 0 2 0 ", "3 0 1 0 ", "1 0 3 0 "];
-        let colorsRabbit = ["1 1 ", "1 1 ", "1 1 ", "1 1 ", "1 1 ", "8 9 ", "9 8 ", "0 8 ", "8 0 ", "0 9 ", "9 0 "];
+        let currentAnswer = "";
+        let inputSequence = "";
+        let colorsPig = ["1", "2", "3"];
+        let colorsRabbit = ["8", "9", "0"];
 
         function startGame(type) {
             if (gameActive) {
@@ -48,49 +52,43 @@
             gameType = type;
             gameActive = true;
             round = 0;
-            startTime = Date.now();
+            inputSequence = "";
             generateQuestion();
         }
 
         function generateQuestion() {
             let colorSet = gameType === "돼지" ? colorsPig : colorsRabbit;
-            let part1 = colorSet[Math.floor(Math.random() * colorSet.length)];
-            let part2 = colorSet[Math.floor(Math.random() * colorSet.length)];
-            let part3 = colorSet[Math.floor(Math.random() * colorSet.length)];
-            let part4 = colorSet[Math.floor(Math.random() * (gameType === "돼지" ? 3 : colorSet.length))];
-            let part5 = colorSet[Math.floor(Math.random() * (gameType === "돼지" ? 3 : colorSet.length))];
-            let part6 = colorSet[Math.floor(Math.random() * (gameType === "돼지" ? 3 : colorSet.length))];
-
-            let result;
-            if (gameType === "토끼") {
-                result = `${part1}${part2}${part3}\n${part4}${part5}${part6}`;
-            } else {
-                result = part1 + part2 + part3 + part4 + part5 + part6;
-            }
-            currentAnswer = result.replace(/\s/g, '');
-            document.getElementById("output").innerText = result;
+            currentAnswer = Array.from({ length: 4 }, () => colorSet[Math.floor(Math.random() * colorSet.length)]).join("");
+            document.getElementById("output").innerText = `패턴: ${currentAnswer}`;
+            inputSequence = "";
+            renderButtons(colorSet);
         }
 
-        function checkAnswer() {
-            let userInput = document.getElementById("userInput").value.replace(/\s/g, '');
-            if (!gameActive) {
-                alert("게임을 시작하세요.");
-                return;
-            }
+        function renderButtons(colorSet) {
+            let container = document.getElementById("button-container");
+            container.innerHTML = "";
+            colorSet.forEach(num => {
+                let btn = document.createElement("button");
+                btn.innerText = num;
+                btn.classList.add("game-button");
+                btn.onclick = () => handleInput(num);
+                container.appendChild(btn);
+            });
+        }
 
-            if (userInput === currentAnswer) {
+        function handleInput(input) {
+            if (!gameActive) return;
+            inputSequence += input;
+            if (inputSequence === currentAnswer) {
                 round++;
-                let elapsedTime = (Date.now() - startTime) / 1000 - 2;
-                startTime = Date.now();
-                document.getElementById("output").innerText = `통과\nRound: ${round}`;
-                generateQuestion();
-            } else {
-                alert("실패");
+                document.getElementById("output").innerText = `통과! Round: ${round}`;
+                setTimeout(generateQuestion, 1000);
+            } else if (!currentAnswer.startsWith(inputSequence)) {
+                alert("실패!");
                 gameActive = false;
                 document.getElementById("output").innerText = "게임 종료. 다시 시작하세요.";
             }
         }
     </script>
-
 </body>
 </html>
