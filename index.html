@@ -3,14 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>리듬 게임</title>
+    <title>떡치기</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
         }
+        #timer-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background-color: red;
+            transition: none;
+        }
         #game-container {
-            margin-top: 20px;
+            margin-top: 50px;
         }
         #output {
             font-size: 20px;
@@ -25,23 +34,18 @@
         .correct {
             color: lightgray;
         }
-        #timer-bar {
-            width: 100%;
-            height: 20px;
-            background-color: red;
-            transition: width 5s linear;
-        }
     </style>
 </head>
 <body>
-
-    <h1>리듬 게임</h1>
-    <button onclick="startGame('돼지')">/돼지</button>
-    <button onclick="startGame('토끼')">/토끼</button>
+    <div id="timer-bar"></div>
+    <h1>떡치기</h1>
+    <div id="start-buttons">
+        <button onclick="startGame('돼지')">/돼지</button>
+        <button onclick="startGame('토끼')">/토끼</button>
+    </div>
     
     <div id="game-container">
         <p id="output">게임을 시작하세요.</p>
-        <div id="timer-bar"></div>
         <div id="button-container"></div>
     </div>
 
@@ -65,6 +69,7 @@
             gameActive = true;
             round = 0;
             inputSequence = "";
+            document.getElementById("start-buttons").style.display = "none";
             generateQuestion();
         }
 
@@ -74,6 +79,7 @@
 
         function generateQuestion() {
             clearTimeout(timer);
+            resetTimerBar();
             let colorSet = gameType === "돼지" ? colorsPig : colorsRabbit;
             let length = getPatternLength();
             
@@ -121,16 +127,26 @@
         
         function startTimer() {
             let timerBar = document.getElementById("timer-bar");
+            timerBar.style.transition = "none";
             timerBar.style.width = "100%";
-            timerBar.style.transition = "width 5s linear";
-            setTimeout(() => { timerBar.style.width = "0%"; }, 10);
+            setTimeout(() => {
+                timerBar.style.transition = "width 5s linear";
+                timerBar.style.width = "0%";
+            }, 10);
             timer = setTimeout(gameOver, 5000);
+        }
+
+        function resetTimerBar() {
+            let timerBar = document.getElementById("timer-bar");
+            timerBar.style.transition = "none";
+            timerBar.style.width = "100%";
         }
 
         function gameOver() {
             alert("실패! 게임 오버");
             gameActive = false;
             document.getElementById("output").innerText = "게임 종료. 다시 시작하세요.";
+            document.getElementById("start-buttons").style.display = "block";
         }
 
         document.addEventListener("keydown", (event) => {
