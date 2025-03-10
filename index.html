@@ -22,9 +22,10 @@
             margin-top: 50px;
         }
         #output {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: bold;
-            margin: 10px 0;
+            margin: 20px 0;
+            text-align: center;
         }
         .game-button {
             font-size: 20px;
@@ -33,6 +34,12 @@
         }
         .correct {
             color: lightgray;
+        }
+        #button-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
         }
     </style>
 </head>
@@ -45,7 +52,7 @@
     </div>
     
     <div id="game-container">
-        <p id="output">게임을 시작하세요.</p>
+        <p id="output"></p>
         <div id="button-container"></div>
     </div>
 
@@ -90,7 +97,7 @@
             }
             
             let formattedAnswer = currentAnswer.split('').map(num => `<span class="pattern" data-value="${num}">${num}</span>`).join('');
-            document.getElementById("output").innerHTML = `패턴: ${formattedAnswer}`;
+            document.getElementById("output").innerHTML = formattedAnswer;
             inputSequence = "";
             renderButtons(colorSet);
             startTimer();
