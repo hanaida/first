@@ -8,6 +8,10 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100vh;
         }
         #timer-bar {
             position: fixed;
@@ -19,7 +23,11 @@
             transition: none;
         }
         #game-container {
-            margin-top: 50px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         #output {
             font-size: 20px;
@@ -31,7 +39,7 @@
             flex-wrap: nowrap;
             justify-content: center;
             gap: 10px;
-            margin-top: 10px;
+            margin-bottom: 20px;
         }
         .game-button {
             flex: 1;
@@ -43,14 +51,19 @@
         .correct {
             color: lightgray;
         }
+        #button-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
     </style>
 </head>
 <body>
     <div id="timer-bar"></div>
     <h1>떡치기</h1>
     <div id="start-buttons">
-        <button onclick="startGame('돼지')">/돼지</button>
-        <button onclick="startGame('토끼')">/토끼</button>
+        <button onclick="startGame('돼지')">돼지</button>
     </div>
     
     <div id="game-container">
@@ -65,7 +78,6 @@
         let currentAnswer = "";
         let inputSequence = "";
         let colorsPig = ["1", "2", "3"];
-        let colorsRabbit = ["8", "9", "0"];
         let buttonMap = {};
         let timer;
 
@@ -89,27 +101,21 @@
         function generateQuestion() {
             clearTimeout(timer);
             resetTimerBar();
-            let colorSet = gameType === "돼지" ? colorsPig : colorsRabbit;
             let length = getPatternLength();
-            
-            if (gameType === "돼지") {
-                currentAnswer = Array.from({ length: length }, (_, i) => (i % 2 === 0 ? colorsPig[Math.floor(Math.random() * colorsPig.length)] : "0")).join("");
-            } else {
-                currentAnswer = Array.from({ length: length }, () => colorSet[Math.floor(Math.random() * colorSet.length)]).join("");
-            }
+            currentAnswer = Array.from({ length: length }, (_, i) => (i % 2 === 0 ? colorsPig[Math.floor(Math.random() * colorsPig.length)] : "0")).join("");
             
             let formattedAnswer = currentAnswer.split('').map(num => `<span class="pattern" data-value="${num}">${num}</span>`).join('');
             document.getElementById("output").innerHTML = `패턴: ${formattedAnswer}`;
             inputSequence = "";
-            renderButtons(colorSet);
+            renderButtons();
             startTimer();
         }
 
-        function renderButtons(colorSet) {
+        function renderButtons() {
             let container = document.getElementById("button-container");
             container.innerHTML = "";
             buttonMap = {};
-            colorSet.concat(["0"]).forEach(num => {
+            colorsPig.concat(["0"]).forEach(num => {
                 let btn = document.createElement("button");
                 btn.innerText = num;
                 btn.classList.add("game-button");
